@@ -17,7 +17,9 @@ import com.AppRh.App.Rh.models.Vaga;
 
 @Controller
 public class VagaController {
+    @Autowired
     private VagaRepository vr;
+    @Autowired
     private CandidatoRepository cr;
 
     // Cadastrar Vaga
@@ -86,5 +88,37 @@ public class VagaController {
         cr.save(candidato);
         attributes.addFlashAttribute("mensagem", "Candidato adicionado com sucesso!");
         return "redirect:/{codigo}";
+    }
+
+    // Deletar candidato (pelo rg)
+    @RequestMapping("/deletarCandidato")
+    public String deletarCandidato(String rg) {
+        Candidato candidato = cr.findByRg(rg);
+        Vaga vaga = candidato.getVaga();
+        String codigo = "" + vaga.getCodigo();
+
+        cr.delete(candidato);
+        return "reditect:/" + codigo;
+    }
+
+    // Métodos atualizadores
+    // Formulário de edição de vaga
+    @RequestMapping(value = "/editar-vaga", method = RequestMethod.GET)
+    public ModelAndView editarVaga(long codigo) {
+        Vaga vaga = vr.findByCodigo(codigo);
+        ModelAndView mv = new ModelAndView("vaga/update-vaga");
+        mv.addObject("vaga", vaga);
+        return mv;
+    }
+
+    // Update vaga
+    @RequestMapping(value = "/editar-vaga", method = RequestMethod.POST)
+    public String updateVaga(@Valid Vaga vaga, BindingResult result, RedirectAttributes attributes) {
+        vr.save(vaga);
+        attributes.addFlashAttribute("success", "Vaga alterada com sucesso!");
+
+        long codigoLong = vaga.getCodigo();
+        String codigo = "" + codigoLong;
+        return "redirect:/" + codigo;
     }
 }
